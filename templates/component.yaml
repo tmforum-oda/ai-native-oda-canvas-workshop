@@ -1,0 +1,74 @@
+apiVersion: oda.tmforum.org/v1
+kind: Component
+metadata:
+  # TEAM EDITABLE: replace consistently with the Component resource name assigned by the facilitator.
+  name: replace-with-team-component-name
+  labels:
+    oda.tmforum.org/componentName: replace-with-team-component-name
+spec:
+  componentMetadata:
+    # TEAM EDITABLE: use the unique ID and metadata agreed with the facilitator.
+    id: replace-with-team-component-id
+    name: replace-with-team-component-name
+    version: "0.1.0"
+    description: Replace with a concise description of the assigned use case.
+    functionalBlock: CoreCommerce
+    publicationDate: "2026-08-01T00:00:00Z"
+    status: specified
+    maintainers:
+      - name: Workshop Team
+        email: workshop@example.invalid
+    owners:
+      - name: Workshop Team
+        email: workshop@example.invalid
+
+  coreFunction:
+    # FACILITATOR MANAGED: do not change the UI interface contract.
+    exposedAPIs:
+      - name: orch-agent-ui
+        # UI-only MVP: openapi is a temporary Canvas routing workaround.
+        apiType: openapi
+        specification:
+          - url: https://example.invalid/thin-agent-ui.yaml
+        implementation: replace-with-team-orchestrator-service-name
+        path: /replace-with-team-component-name
+        port: 8000
+        resources: []
+        gatewayConfiguration:
+          apiKeyVerification: {}
+          rateLimit: {}
+          quota: {}
+          OASValidation: {}
+          CORS: {}
+          template: ""
+
+    # TEAM EDITABLE: replace this example with the dependencies in your assigned use-case guide.
+    dependentAPIs:
+      - name: replace-with-exposed-api-name
+        specification:
+          - apiType: mcp
+
+  eventNotification:
+    publishedEvents: []
+    subscribedEvents: []
+
+  # FACILITATOR MANAGED: do not change the observability interface.
+  managementFunction:
+    exposedAPIs:
+      - name: otel-collector-metrics
+        apiType: openmetrics
+        implementation: replace-with-team-otel-collector-service-name
+        path: /replace-with-team-component-name/otel-metrics
+        port: 8888
+        gatewayConfiguration:
+          apiKeyVerification: {}
+          rateLimit: {}
+          quota: {}
+          OASValidation: {}
+          CORS: {}
+          template: ""
+
+  # FACILITATOR MANAGED: the workshop MVP uses the existing Canvas role configuration.
+  securityFunction:
+    canvasSystemRole: Admin
+    exposedAPIs: []
