@@ -1,16 +1,16 @@
 # UC-02 — Installed Product Assistant
 
-## Participant User Guide
+## Participant user guide
 
 ## 1. Objective
 
-In this exercise, your team will use the AI-Native Canvas Orchestrator Agent to find seeded installed products and explain their Product Inventory lifecycle state.
+In this exercise, your team will design and validate an AI-Native ODA Component that finds seeded installed products and explains their Product Inventory lifecycle state.
 
-You will use:
+The Component will depend on:
 
-- `productinventorymcp` — direct invocation of TMF637 Product Inventory MCP tools.
+- `productinventorymcp` for access to Product Inventory MCP tools.
 
-By completing the exercise, your team should be able to explain how natural-language customer, lifecycle, and stable-identifier requests are mapped to a bounded MCP tool contract.
+You will use this interface to retrieve installed products by customer, lifecycle state, and stable workshop identifier.
 
 ## 2. Use-case boundary
 
@@ -19,64 +19,155 @@ The Component supports Product Inventory questions about:
 - installed products;
 - products assigned to a workshop customer;
 - active, suspended, and terminated product states;
-- a product identified by its stable product serial number;
-- a product identified by its API-generated ID.
+- the product-offering reference recorded against an installed product;
+- a product identified by its stable product serial number.
 
 It does not provide Product Catalog, Service Inventory, Resource Inventory, Service Qualification, or Product Ordering capabilities.
 
-Each query sent to the Orchestrator Agent invokes at most one selected dependency capability. The Orchestrator Agent does not chain multiple tools or skills.
+All workshop records are synthetic and prepared specifically for this exercise.
 
-## 3. Discover the dependency in the Canvas Dashboard
+The Orchestrator Agent provides single-turn conversations. Include the relevant entity, identifier, requested fields, and other necessary context in every query. Do not rely on an earlier response or a follow-up such as “Describe it”.
 
-Before editing `component.yaml`, use the AI-Native Canvas Dashboard to identify the scaffolded ODA Component that owns the required MCP API.
+## 3. Identify the dependent function in the AI-Native ODA Canvas Dashboard
 
-The primary dependency entity for this exercise is:
+### 3.1 Open the AI-Native ODA Canvas Dashboard
 
-| Component ID | Scaffolded Component | Deployed Component resource |
-|---|---|---|
-| `TMFC005` | Product Inventory Management | `pi-1-productinventory` |
+Obtain the **AI-Native ODA Canvas Dashboard URL** from the facilitator's presentation or the link pinned in the workshop Teams channel.
 
-`TMFC005` identifies the scaffolded Product Inventory Management Component. `TMF637` identifies its Product Inventory Management OpenAPI contract; it is not the Component identity and is not the dependent API selected for this MVP.
+> **Workshop certificate notice:** The AI-Native ODA Canvas Dashboard and deployed Orchestrator Agent use workshop-managed self-signed certificates. Your browser may display **Your connection is not private**, **Certificate not trusted**, or a similar warning. Confirm that the complete URL exactly matches the facilitator-provided or pinned workshop URL. Then select the browser's **Advanced** option and choose **Proceed**, **Continue**, or **Accept the risk**. Do not proceed if the hostname differs or the link did not come from the facilitator; ask the facilitator to verify it.
 
-1. Open the AI-Native Canvas Dashboard URL supplied by the facilitator.
-2. Open the **Infrastructure** area.
+1. Open the AI-Native ODA Canvas Dashboard.
+2. Open the **Infrastructure** tab.
 3. Select **Components**.
 4. If a namespace filter is displayed, select **components** or **All namespaces**.
-5. Find **TMFC005 — Product Inventory Management** in the Components view. The deployed Component resource is `pi-1-productinventory`.
-6. Open that Component and confirm that its metadata identifies `TMFC005`.
-7. Confirm that the Component **Status** is **Complete**.
-8. Locate the **Exposed core APIs** section owned by this Component.
-9. Find the row whose **API Type** is **mcp**.
-10. Record the exact **Name** and **API Type** shown for that row.
 
-For this use case, you should identify:
+This use case requires an API from this deployed Component:
 
-| Exposed API name | API type | Purpose |
+| Required interface | Dependent function | Component ID | Deployed Component resource |
+|---|---|---|---|
+| MCP | Product Inventory Management | `TMFC005` | `pi-1-productinventory` |
+
+### 3.2 Find the MCP dependency under TMFC005
+
+1. In the Components view, find **TMFC005 — Product Inventory Management**. Its deployed Component resource is `pi-1-productinventory`.
+2. Open the Component.
+3. Confirm that its Component metadata shows ID `TMFC005`.
+4. Confirm that its **Status** is **Complete**.
+5. Find **Exposed core APIs**.
+6. Find the row whose **API Type** is **mcp** and whose **Name** is `productinventorymcp`.
+7. Record:
+   - exposed API **Name**: `productinventorymcp`;
+   - **API Type**: `mcp`.
+
+Do not select the `TMF637` OpenAPI row. `TMF637` identifies the Product Inventory API contract; the dependency required by this exercise is the MCP API named `productinventorymcp`.
+
+If `productinventorymcp` is missing or the Component is not **Complete**, stop and notify the facilitator.
+
+### 3.3 Confirm the dependency value
+
+You should now have:
+
+| Dependent function Component ID | Exposed API Name | API type |
 |---|---|---|
-| `productinventorymcp` | `mcp` | Product Inventory MCP tools |
+| `TMFC005` | `productinventorymcp` | `mcp` |
 
-Use the value shown in the **Name** column—not the ID, implementation, URL, Component name, or display label—as the dependent API name in your Component definition. Do not copy the exposed URL into `component.yaml`; the Canvas resolves it after deployment.
+Use the exposed API **Name** exactly as displayed in the AI-Native ODA Canvas Dashboard. Do not use the Component ID, API contract ID, implementation name, display label, or URL as the dependency name.
 
-Do not select the `TMF637` OpenAPI row for this workshop exercise. Select the MCP API exposed by the `TMFC005` Component.
+Do not copy the exposed API URL into `component.yaml`. The AI-Native ODA Canvas resolves the deployed dependency endpoint.
 
-If the MCP API is missing or the Product Inventory Component is not **Complete**, stop and notify the facilitator.
+## 4. Download and update component.yaml
 
-## 4. Build the dependency declaration
+### 4.1 Download the template
 
-Declare this dependency in the supplied Component template:
+1. Open the participant template: [`templates/component.yaml`](../templates/component.yaml).
+2. Use the GitHub **Download raw file** action to download it.
+3. Keep the filename `component.yaml`.
+4. Open the downloaded file in a text or code editor.
+
+Do not create a new Component definition from an empty file. Start with the supplied template so that the facilitator-managed sections remain intact.
+
+### 4.2 Update the team-owned fields
+
+Change each of the following fields:
+
+| YAML field | Required change |
+|---|---|
+| `metadata.name` | Replace `replace-with-team-component-name` with the unique Component resource name assigned or approved by the facilitator. |
+| `metadata.labels["oda.tmforum.org/componentName"]` | Use exactly the same Component resource name as `metadata.name`. |
+| `spec.componentMetadata.id` | Replace `replace-with-team-component-id` with the unique team Component ID assigned or approved by the facilitator. |
+| `spec.componentMetadata.name` | Use the same team Component name used in `metadata.name`. |
+| `spec.componentMetadata.description` | Describe the Installed Product Assistant and state that it uses the Product Inventory MCP dependency. |
+| `spec.componentMetadata.functionalBlock` | Replace `replace-with-functional-block` with `CoreCommerce`. |
+| `spec.componentMetadata.maintainers[0].name` | Replace `Workshop Team` with the team or maintainer name agreed during the exercise. |
+| `spec.componentMetadata.owners[0].name` | Replace `Workshop Team` with the team or owner name agreed during the exercise. |
+| `spec.coreFunction.dependentAPIs` | Replace the example dependency with the dependency entry shown in section 4.3. |
+
+Leave these supplied Component metadata values unchanged unless the facilitator instructs otherwise:
+
+- `spec.componentMetadata.version`;
+- `spec.componentMetadata.publicationDate`;
+- `spec.componentMetadata.status`.
+
+### 4.3 Replace dependentAPIs
+
+Under `spec.coreFunction`, replace the complete example `dependentAPIs` block with:
 
 ```yaml
-dependentAPIs:
-  - name: productinventorymcp
-    specification:
-      - apiType: mcp
+    dependentAPIs:
+      - name: productinventorymcp
+        specification:
+          - apiType: mcp
 ```
 
-The dependency name is exact and case-sensitive. Do not add an endpoint URL; the Canvas resolves it from the deployed Product Inventory Component.
+Apply these rules:
 
-## 5. Readiness checks
+1. Enter the dependency exactly as shown.
+2. Keep the dependency name lowercase and unchanged; matching is case-sensitive.
+3. Use `mcp` as its `apiType`.
+4. Do not add a dependency URL or credential.
+5. Do not declare the `TMF637` OpenAPI interface.
 
-Open the team-specific Orchestrator Agent URL supplied by the facilitator. Before running the exercise, confirm that the sidebar shows green indicators for:
+### 4.4 Do not change facilitator-managed fields
+
+Do not change:
+
+- `spec.coreFunction.exposedAPIs`;
+- the Orchestrator Agent implementation, path, or port placeholders;
+- `spec.eventNotification`;
+- `spec.managementFunction`;
+- `spec.securityFunction`;
+- any gateway, observability, credential, service, health, or runtime setting.
+
+The facilitator will complete the deployment-specific placeholders after reviewing your submission.
+
+### 4.5 Review and submit
+
+Before submitting the file, confirm:
+
+- [ ] The team Component ID and name are correct and consistent.
+- [ ] The description identifies the Installed Product Assistant use case.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] Owner and maintainer names have been updated.
+- [ ] `productinventorymcp` is declared with `apiType: mcp`.
+- [ ] No dependency URL or credential has been added.
+- [ ] Facilitator-managed sections remain unchanged.
+- [ ] The YAML indentation and structure are valid.
+
+Submit the completed `component.yaml` through the channel specified by the facilitator. Do not deploy it directly unless the facilitator asks you to do so.
+
+## 5. Open the deployed Orchestrator Agent
+
+The facilitator will review and deploy your `component.yaml`.
+
+After deployment:
+
+1. Wait for the facilitator to confirm that your team's Component is ready.
+2. Obtain your team's **Orchestrator Agent URL** from the facilitator in the workshop Teams channel.
+3. Alternatively, open your team's Component in the **AI-Native ODA Canvas Dashboard**, find **Exposed core APIs**, locate the row named `orch-agent-ui`, and open its **URL**.
+4. If the browser displays a certificate warning, verify the URL and follow the workshop certificate notice in section 3.1.
+5. Do not use the Product Inventory MCP or OpenAPI URL as the Orchestrator Agent URL.
+
+Before running the exercise, confirm that the Orchestrator Agent sidebar shows green indicators for:
 
 - **Component complete**;
 - **Component CR readable**;
@@ -86,7 +177,7 @@ Open the team-specific Orchestrator Agent URL supplied by the facilitator. Befor
 
 Confirm that `productinventorymcp` appears in the dependency selector.
 
-If the dependency was recently deployed or corrected, select **Refresh Dependent Services** before continuing.
+If the facilitator has corrected or redeployed the dependency, select **Refresh Dependent Services** once before continuing.
 
 ## 6. Discover the available capabilities
 
@@ -96,79 +187,52 @@ Keep the dependency selection set to **Auto** and run:
 
 Expected result:
 
-- the response reports four capabilities across one dependency;
-- `productinventorymcp` exposes `product_get`, `product_create`, `product_update`, and `product_delete`.
+- `productinventorymcp` exposes four Product Inventory MCP tools;
+- the Component reports four capabilities across one dependency;
+- the listed tools are `product_get`, `product_create`, `product_update`, and `product_delete`.
 
 Run:
 
 > What MCP tools are available?
 
-Expected result: the response lists the four discovered Product Inventory MCP tools.
-
-Run:
-
-> Describe the product_get capability and its parameters
-
-Expected result: the response describes these optional arguments:
-
-- `product_id`;
-- `product_serial_number`;
-- `customer_id`;
-- `status`;
-- `offset`;
-- `limit`;
-- `filter`.
-
-The response must not list a `fields` argument.
+Expected result: the response lists the same four Product Inventory MCP tools.
 
 ## 7. Test Product Inventory access
 
-Select `productinventorymcp` explicitly in the dependency selector.
+Select `productinventorymcp` in the dependency selector.
 
-### 7.1 Find products installed for a customer
+### 7.1 Find installed products for a customer
 
 Run:
 
-> What products are installed for customer CUST-1001?
+> What products are installed for customer CUST-1001? Return only their name, product serial number, status and product offering.
 
 Expected result:
 
-| Product | Product serial number | Status |
-|---|---|---|
-| Fiber Broadband 50 Mbps | `WS-PROD-1001` | active |
-| Business Firewall | `WS-PROD-1002` | suspended |
-
-**Legacy Business Broadband** must not be included because it is assigned to `CUST-1002`.
-
-The status line should identify `productinventorymcp`, API type `mcp`, capability `product_get`, and invocation mode.
+- **Fiber Broadband 50 Mbps**, serial number `WS-PROD-1001`, state active;
+- **Business Firewall**, serial number `WS-PROD-1002`, state suspended;
+- both records belong to `CUST-1001` and the response does not include the CUST-1002 product;
+- the status line identifies `productinventorymcp`, API type `mcp`, and capability `product_get`.
 
 ### 7.2 Find active installed products
 
 Run:
 
-> Which installed products are currently active?
+> Which installed products are currently active? Return only their name, product serial number and customer ID.
 
-Expected result: only **Fiber Broadband 50 Mbps**, with product serial number `WS-PROD-1001` and status `active`.
-
-The request must route to `product_get`; it must not be classified as unsupported.
+Expected result: only **Fiber Broadband 50 Mbps**, serial number `WS-PROD-1001`, for `CUST-1001` is returned.
 
 ### 7.3 Retrieve a product by its stable workshop identifier
 
 Run:
 
-> Describe installed product WS-PROD-1001.
+> Invoke product_get with product_serial_number WS-PROD-1001 and describe the returned installed product.
 
-Expected result:
+Expected result: the response describes **Fiber Broadband 50 Mbps**, its active state, customer `CUST-1001`, 50 Mbps characteristic, and related Fiber product offering or specification.
 
-- name: **Fiber Broadband 50 Mbps**;
-- customer: `CUST-1001`;
-- product serial number: `WS-PROD-1001`;
-- status: `active`;
-- download speed: `50 Mbps`.
+Use `product_serial_number` for `WS-PROD-1001`. Do not place this stable workshop value in the `product_id` argument.
 
-`WS-PROD-1001` is a stable workshop product serial number. It is not the API-generated Product resource ID.
-
-### 7.4 Explain the seeded lifecycle states
+### 7.4 Explain all seeded lifecycle states
 
 Run:
 
@@ -176,105 +240,57 @@ Run:
 
 Expected result:
 
-- `WS-PROD-1001` is active;
-- `WS-PROD-1002` is suspended for a planned policy review;
-- `WS-PROD-1003` is terminated after migration to fiber.
+- Fiber Broadband 50 Mbps is active;
+- Business Firewall is suspended;
+- Legacy Business Broadband is terminated.
 
-The explanation must be grounded in the returned Product Inventory records rather than a generic lifecycle definition.
-
-## 8. Understand the MCP argument mapping
-
-The Product Inventory MCP server exposes semantic arguments that are translated into TMF637 queries:
-
-| User intent | MCP argument | TMF637 request behavior |
-|---|---|---|
-| Retrieve one resource using its generated API ID | `product_id` | Calls `/product/{id}` |
-| Find a stable workshop product | `product_serial_number` | Filters by `productSerialNumber` |
-| Find products belonging to a customer | `customer_id` | Filters the nested `customerId` product characteristic |
-| Find products in a lifecycle state | `status` | Filters by Product Inventory status |
-
-Run these explicit controls if instructed by the facilitator:
-
-> Invoke product_get with customer_id `CUST-1001` and list each returned product’s name, product serial number and status.
-
-> Invoke product_get with status `active` and list each returned product’s name, product serial number and status.
-
-> Invoke product_get with product_serial_number `WS-PROD-1001` and describe the returned installed product.
-
-The controls should return the same seeded records as the corresponding natural-language questions.
-
-## 9. Run the unsupported-domain control
+## 8. Run the unsupported-domain control
 
 With `productinventorymcp` selected, run:
 
-> What network resources are available at the Mumbai site?
+> What network resources are available at the Accelerate Asia Primary Site?
 
-Expected result: the Orchestrator Agent rejects the request as unsupported because the Component has no Resource Inventory capability.
+Expected result: the request is rejected as unsupported because Resource Inventory is outside this Component's declared Product Inventory domain.
 
-The query must not be answered using general model knowledge or routed to `product_get`.
-
-## 10. Validate not-found behavior
-
-Run:
-
-> Invoke product_get with product_id `00000000-0000-0000-0000-000000000000`.
-
-Expected result:
-
-- no product is fabricated;
-- the response states that no installed product was found;
-- the status is `not_found`;
-- the response does not report HTTP 405 or `Invalid input`.
-
-This test uses the API-generated identifier argument intentionally. Do not use a workshop product serial number in `product_id`.
-
-## 11. Architectural observations
+## 9. Record your observations
 
 Record and discuss:
 
-1. Why does `product_id` require an API-generated identifier?
-2. Why is `product_serial_number` more appropriate for `WS-PROD-1001`?
-3. How does `customer_id` hide the complexity of a nested TMF637 characteristic filter?
-4. How does the capability description help the outer Orchestrator Agent select `product_get`?
-5. Why should an unknown resource be reported as `not_found` rather than as an invalid method?
+1. Which Component owns `productinventorymcp`?
+2. Which exposed API Name and API type did your Component declare?
+3. Which argument holds the stable identifier `WS-PROD-1001`?
+4. What information in the response confirms that the Product Inventory MCP dependency was used?
+5. Why was the Resource Inventory control query rejected?
 
-## 12. Exercise completion checklist
+## 10. Exercise completion checklist
 
+- [ ] The AI-Native ODA Canvas Dashboard URL was obtained from the facilitator or pinned Teams message.
+- [ ] `TMFC005 — Product Inventory Management` was used to find `productinventorymcp`.
+- [ ] The dependent Component reports **Complete** in the AI-Native ODA Canvas Dashboard.
+- [ ] The template `component.yaml` was downloaded from this repository.
+- [ ] All required team-owned fields were updated.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] `productinventorymcp` is declared with `apiType: mcp`.
+- [ ] The completed `component.yaml` was submitted to the facilitator.
+- [ ] The deployed Orchestrator Agent URL was obtained from the facilitator or the `orch-agent-ui` row.
 - [ ] All five readiness indicators are green.
-- [ ] `TMFC005 — Product Inventory Management` is identified as the dependency Component.
-- [ ] The deployed Product Inventory Component is **Complete** in the Canvas Dashboard.
-- [ ] The MCP API name and type were taken from **Exposed core APIs**.
-- [ ] `productinventorymcp` is resolved and available for selection.
-- [ ] All four MCP tools are discovered.
-- [ ] `product_get` exposes the expected semantic arguments.
-- [ ] The customer query returns the two products assigned to `CUST-1001`.
-- [ ] The active-products query returns only `WS-PROD-1001`.
-- [ ] The stable workshop-ID query describes `WS-PROD-1001` correctly.
-- [ ] The lifecycle explanation covers active, suspended, and terminated products.
-- [ ] The unknown API ID is reported as `not_found`.
+- [ ] Four Product Inventory MCP tools are discovered.
+- [ ] The CUST-1001 response contains the Fiber and Firewall products only.
+- [ ] The active-product query returns only `WS-PROD-1001`.
+- [ ] The stable identifier is supplied as `product_serial_number`.
+- [ ] All three seeded lifecycle states are returned.
 - [ ] The Resource Inventory control query is rejected as unsupported.
-- [ ] The response status identifies `productinventorymcp`, MCP, and `product_get`.
-- [ ] The team can explain the difference between a product serial number and an API-generated ID.
 
-## 13. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Action |
 |---|---|
-| The Product Inventory Component or MCP API is missing in the Dashboard | Confirm the namespace filter, then ask the facilitator to verify the deployed dependency Component. |
-| The dependency is missing or unresolved | Confirm the dependency name and `apiType` in `component.yaml`, then ask the facilitator to verify Component completion. |
-| MCP capability discovery fails | Select **Refresh Dependent Services** once; if the problem remains, provide the visible error to the facilitator. |
-| The customer query returns no products | Confirm the updated MCP contract includes `customer_id`; then use the explicit customer argument control. |
-| The active-products query is unsupported | Confirm the updated `product_get` description was discovered after refreshing dependencies. |
-| `WS-PROD-1001` is treated as `product_id` | Use `product_serial_number` or repeat the validated natural-language query. Workshop IDs are not generated API IDs. |
-| An unknown ID returns HTTP 405 | Ask the facilitator to verify that the updated Product Inventory API image is deployed. |
-| A follow-up such as `Describe it` is unsupported | Repeat the complete request and include the product serial number explicitly. |
-| A response is too long | Ask for one product by serial number or request only the information needed in the answer. |
-
-## 14. Current MVP constraints
-
-- The outer Orchestrator Agent invokes only one dependency capability for each query.
-- Outer-agent tool or skill chaining is not supported.
-- Previous chat messages are not supplied as conversational context.
-- The exercise uses direct MCP access; no Product Inventory A2A dependency is included.
-- All workshop records are synthetic.
-- Create, update, and delete operations are outside the UC-02 participant exercise.
+| The AI-Native ODA Canvas Dashboard cannot be opened | Use the AI-Native ODA Canvas Dashboard URL shown by the facilitator or pinned in the workshop Teams channel. If it still fails, notify the facilitator. |
+| The browser reports that the certificate is not trusted | Confirm that the complete hostname matches the facilitator-provided AI-Native ODA Canvas Dashboard or Orchestrator Agent URL. Use **Advanced** and proceed only for that verified workshop URL. |
+| `TMFC005` or `productinventorymcp` is missing | Confirm the namespace filter, then ask the facilitator to verify the Product Inventory Management Component. |
+| The dependency is unresolved | Confirm the exact dependency name and `apiType` in `component.yaml`, then ask the facilitator to verify the dependent Component. |
+| The team's Orchestrator Agent URL is unknown | Ask the facilitator for the team-specific URL or locate `orch-agent-ui` under the team's Component in the AI-Native ODA Canvas Dashboard. |
+| Product Inventory tools are unavailable | Select **Refresh Dependent Services** once; if the problem remains, provide the visible error to the facilitator. |
+| A stable identifier query returns no record | Confirm that `WS-PROD-1001` was supplied as `product_serial_number`, not `product_id`. |
+| A follow-up such as “Describe it” is unsupported | Repeat the complete request and include the product serial number explicitly. |
+| A response is too long | Request only the fields shown in this guide or retrieve one product by its product serial number. |

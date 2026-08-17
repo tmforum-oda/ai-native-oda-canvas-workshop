@@ -1,76 +1,175 @@
 # UC-06 — Product Order Status Assistant
 
-## Participant User Guide
+## Participant user guide
 
 ## 1. Objective
 
-In this exercise, your team will use the AI-Native Canvas Orchestrator Agent to retrieve and explain seeded Product Order lifecycle states through an A2A dependency.
+In this exercise, your team will design and validate an AI-Native ODA Component that retrieves and explains seeded Product Order lifecycle states.
 
-You will use:
+The Component will depend on:
 
-- `productordera2a` — the Product Order A2A agent and its bounded status-query skill.
+- `productordera2a` for access to the Product Order A2A status-query skill.
 
-The Product Order agent owns its internal dependency on `productorderingmcp`. Your Component must not declare that MCP API directly.
+You will use this interface to retrieve orders by state, customer, and stable external ID.
 
 ## 2. Use-case boundary
 
-The Component supports read-only Product Order status questions about:
+The Component supports Product Order questions about:
 
 - all seeded Product Orders;
-- completed, in-progress and held orders;
-- one order identified by its stable external ID;
+- completed, in-progress, and held orders;
+- an order identified by its stable external ID;
 - the product offering and customer described by an order;
 - the reason recorded for a held order.
 
-The A2A skill does not create, update, delete or cancel Product Orders. It does not activate products or services.
+It does not provide Product Catalog, Product Inventory, Service Inventory, Resource Inventory, or Service Qualification capabilities. The Product Order interface used in this exercise provides order-status queries; it is not used to create, update, delete, or cancel an order.
 
-Each outer-agent query invokes one A2A skill. The Product Order agent may then invoke one read-only Product Ordering MCP tool internally.
+All workshop records are synthetic and prepared specifically for this exercise.
 
-## 3. Discover the dependency in the Canvas Dashboard
+The Orchestrator Agent provides single-turn conversations. Include the Product Order entity, complete external ID, requested fields, and other necessary context in every query. Do not rely on an earlier response or a follow-up such as “Why is it held?”.
 
-Before editing `component.yaml`, use the AI-Native Canvas Dashboard to identify the scaffolded ODA Component that owns the required A2A API.
+## 3. Identify the dependent function in the AI-Native ODA Canvas Dashboard
 
-| Component ID | Scaffolded Component | Deployed Component resource |
+### 3.1 Open the AI-Native ODA Canvas Dashboard
+
+Obtain the **AI-Native ODA Canvas Dashboard URL** from the facilitator's presentation or the link pinned in the workshop Teams channel.
+
+> **Workshop certificate notice:** The AI-Native ODA Canvas Dashboard and deployed Orchestrator Agent use workshop-managed self-signed certificates. Your browser may display **Your connection is not private**, **Certificate not trusted**, or a similar warning. Confirm that the complete URL exactly matches the facilitator-provided or pinned workshop URL. Then select the browser's **Advanced** option and choose **Proceed**, **Continue**, or **Accept the risk**. Do not proceed if the hostname differs or the link did not come from the facilitator; ask the facilitator to verify it.
+
+1. Open the AI-Native ODA Canvas Dashboard.
+2. Open the **Infrastructure** tab.
+3. Select **Components**.
+4. If a namespace filter is displayed, select **components** or **All namespaces**.
+
+This use case requires an API from this deployed Component:
+
+| Required interface | Dependent function | Component ID | Deployed Component resource |
+|---|---|---|---|
+| A2A | Product Order Capture and Validation | `TMFC002` | `po-1-productordercaptureandvalidation` |
+
+### 3.2 Find the A2A dependency under TMFC002
+
+1. In the Components view, find **TMFC002 — Product Order Capture and Validation**. Its deployed Component resource is `po-1-productordercaptureandvalidation`.
+2. Open the Component.
+3. Confirm that its Component metadata shows ID `TMFC002`.
+4. Confirm that its **Status** is **Complete**.
+5. Find **Exposed core APIs**.
+6. Find the row whose **API Type** is **a2a** and whose **Name** is `productordera2a`.
+7. Record:
+   - exposed API **Name**: `productordera2a`;
+   - **API Type**: `a2a`.
+
+Do not select the `TMF622` OpenAPI row. `TMF622` identifies the Product Ordering API contract; the dependency required by this exercise is the A2A API named `productordera2a`.
+
+Do not select or declare `productorderingmcp` for this use case. If `productordera2a` is missing or the Component is not **Complete**, stop and notify the facilitator.
+
+### 3.3 Confirm the dependency value
+
+You should now have:
+
+| Dependent function Component ID | Exposed API Name | API type |
 |---|---|---|
-| `TMFC002` | Product Order Capture and Validation | `po-1-productordercaptureandvalidation` |
+| `TMFC002` | `productordera2a` | `a2a` |
 
-`TMFC002` identifies the scaffolded Component. `TMF622` identifies its Product Ordering OpenAPI contract; it is not the dependent API name used in this exercise.
+Use the exposed API **Name** exactly as displayed in the AI-Native ODA Canvas Dashboard. Do not use the Component ID, API contract ID, implementation name, display label, or URL as the dependency name.
 
-1. Open the AI-Native Canvas Dashboard URL supplied by the facilitator.
-2. Open **Infrastructure**, then select **Components**.
-3. Select the **components** namespace or **All namespaces** if a namespace filter is displayed.
-4. Find **TMFC002 — Product Order Capture and Validation**.
-5. Open `po-1-productordercaptureandvalidation` and confirm its status is **Complete**.
-6. Locate **Exposed core APIs**.
-7. Find the row whose **API Type** is **a2a**.
-8. Record the exact API **Name** and **API Type**.
+Do not copy the exposed API URL into `component.yaml`. The AI-Native ODA Canvas resolves the deployed dependency endpoint.
 
-You should identify:
+## 4. Download and update component.yaml
 
-| Exposed API name | API type | Purpose |
-|---|---|---|
-| `productordera2a` | `a2a` | Product Order status-query agent |
+### 4.1 Download the template
 
-Use the exact value in the **Name** column. Do not copy the API ID, implementation, URL, Component name or display label into `dependentAPIs`.
+1. Open the participant template: [`templates/component.yaml`](../templates/component.yaml).
+2. Use the GitHub **Download raw file** action to download it.
+3. Keep the filename `component.yaml`.
+4. Open the downloaded file in a text or code editor.
 
-Do not select the `TMF622` OpenAPI row or declare `productorderingmcp`. If the A2A API is missing or the Component is not **Complete**, notify the facilitator.
+Do not create a new Component definition from an empty file. Start with the supplied template so that the facilitator-managed sections remain intact.
 
-## 4. Build the dependency declaration
+### 4.2 Update the team-owned fields
 
-Declare only this dependency in the supplied Component template:
+Change each of the following fields:
+
+| YAML field | Required change |
+|---|---|
+| `metadata.name` | Replace `replace-with-team-component-name` with the unique Component resource name assigned or approved by the facilitator. |
+| `metadata.labels["oda.tmforum.org/componentName"]` | Use exactly the same Component resource name as `metadata.name`. |
+| `spec.componentMetadata.id` | Replace `replace-with-team-component-id` with the unique team Component ID assigned or approved by the facilitator. |
+| `spec.componentMetadata.name` | Use the same team Component name used in `metadata.name`. |
+| `spec.componentMetadata.description` | Describe the Product Order Status Assistant and state that it uses the Product Order A2A dependency. |
+| `spec.componentMetadata.functionalBlock` | Replace `replace-with-functional-block` with `CoreCommerce`. |
+| `spec.componentMetadata.maintainers[0].name` | Replace `Workshop Team` with the team or maintainer name agreed during the exercise. |
+| `spec.componentMetadata.owners[0].name` | Replace `Workshop Team` with the team or owner name agreed during the exercise. |
+| `spec.coreFunction.dependentAPIs` | Replace the example dependency with the dependency entry shown in section 4.3. |
+
+Leave these supplied Component metadata values unchanged unless the facilitator instructs otherwise:
+
+- `spec.componentMetadata.version`;
+- `spec.componentMetadata.publicationDate`;
+- `spec.componentMetadata.status`.
+
+### 4.3 Replace dependentAPIs
+
+Under `spec.coreFunction`, replace the complete example `dependentAPIs` block with:
 
 ```yaml
-dependentAPIs:
-  - name: productordera2a
-    specification:
-      - apiType: a2a
+    dependentAPIs:
+      - name: productordera2a
+        specification:
+          - apiType: a2a
 ```
 
-Do not add an endpoint URL. The Canvas resolves the deployed A2A endpoint.
+Apply these rules:
 
-## 5. Readiness checks
+1. Enter the dependency exactly as shown.
+2. Keep the dependency name lowercase and unchanged; matching is case-sensitive.
+3. Use `a2a` as its `apiType`.
+4. Do not add a dependency URL or credential.
+5. Do not declare `productorderingmcp`.
+6. Do not declare the `TMF622` OpenAPI interface.
 
-Open the team-specific Orchestrator Agent URL and confirm that the sidebar shows green indicators for:
+### 4.4 Do not change facilitator-managed fields
+
+Do not change:
+
+- `spec.coreFunction.exposedAPIs`;
+- the Orchestrator Agent implementation, path, or port placeholders;
+- `spec.eventNotification`;
+- `spec.managementFunction`;
+- `spec.securityFunction`;
+- any gateway, observability, credential, service, health, or runtime setting.
+
+The facilitator will complete the deployment-specific placeholders after reviewing your submission.
+
+### 4.5 Review and submit
+
+Before submitting the file, confirm:
+
+- [ ] The team Component ID and name are correct and consistent.
+- [ ] The description identifies the Product Order Status Assistant use case.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] Owner and maintainer names have been updated.
+- [ ] `productordera2a` is declared with `apiType: a2a`.
+- [ ] `productorderingmcp` and `TMF622` are not declared.
+- [ ] No dependency URL or credential has been added.
+- [ ] Facilitator-managed sections remain unchanged.
+- [ ] The YAML indentation and structure are valid.
+
+Submit the completed `component.yaml` through the channel specified by the facilitator. Do not deploy it directly unless the facilitator asks you to do so.
+
+## 5. Open the deployed Orchestrator Agent
+
+The facilitator will review and deploy your `component.yaml`.
+
+After deployment:
+
+1. Wait for the facilitator to confirm that your team's Component is ready.
+2. Obtain your team's **Orchestrator Agent URL** from the facilitator in the workshop Teams channel.
+3. Alternatively, open your team's Component in the **AI-Native ODA Canvas Dashboard**, find **Exposed core APIs**, locate the row named `orch-agent-ui`, and open its **URL**.
+4. If the browser displays a certificate warning, verify the URL and follow the workshop certificate notice in section 3.1.
+5. Do not use the Product Order A2A, MCP, or OpenAPI URL as the Orchestrator Agent URL.
+
+Before running the exercise, confirm that the Orchestrator Agent sidebar shows green indicators for:
 
 - **Component complete**;
 - **Component CR readable**;
@@ -78,7 +177,9 @@ Open the team-specific Orchestrator Agent URL and confirm that the sidebar shows
 - **Dependencies resolved**;
 - **Capabilities available**.
 
-Confirm that `productordera2a` appears in the dependency selector. If the dependency was recently updated, select **Refresh Dependent Services** once.
+Confirm that `productordera2a` appears in the dependency selector and that it is the only declared domain dependency for this use case.
+
+If the facilitator has corrected or redeployed the dependency, select **Refresh Dependent Services** once before continuing.
 
 ## 6. Discover the available capability
 
@@ -92,23 +193,23 @@ Run:
 
 > What capabilities are provided by this component?
 
-Expected result: one capability, **Product Order Status Query**.
+Expected result: the Component reports one capability across one dependency.
 
 Run:
 
 > What A2A skills are available?
 
-Expected result: skill ID `product-order-status-query` exposed by `productordera2a`.
+Expected result: the response lists **Product Order Status Query**, skill ID `product-order-status-query`, under `productordera2a`.
 
 Run:
 
 > Retrieve the agent card for productordera2a
 
-Expected result: the Agent Card identifies **Product Order Agent** and its status-query skill.
+Expected result: the Agent Card identifies the Product Order Agent and its `product-order-status-query` skill.
 
 ## 7. Test Product Order status access
 
-Select `productordera2a` explicitly.
+Select `productordera2a` in the dependency selector.
 
 ### 7.1 List every seeded Product Order
 
@@ -118,44 +219,34 @@ Run:
 
 Expected result:
 
-| External ID | Product offering | Customer | State |
-|---|---|---|---|
-| `PO-1001` | Fiber Offering 50 Mbps | `CUST-1001` | completed |
-| `PO-1002` | Business Firewall Solution | `CUST-1001` | `inProgress` |
-| `PO-1003` | Business MPLS Network | `CUST-1002` | held |
+- `PO-1001`, Fiber Offering 50 Mbps, `CUST-1001`, completed;
+- `PO-1002`, Business Firewall Solution, `CUST-1001`, state `inProgress`;
+- `PO-1003`, Business MPLS Network, `CUST-1002`, held;
+- the status line identifies `productordera2a`, API type `a2a`, and capability `product-order-status-query`.
 
-The status line should identify `productordera2a`, API type `a2a`, capability `product-order-status-query`, and invocation mode.
-
-### 7.2 Retrieve the completed order
+### 7.2 Describe the completed order
 
 Run:
 
-> Invoke product-order-status-query to describe the status of product order PO-1001
+> Invoke product-order-status-query to describe the status of product order PO-1001.
 
-Expected result:
+Expected result: the response describes the completed Fiber order and its completion information.
 
-- state: `completed`;
-- product offering: Fiber Offering 50 Mbps;
-- customer: `CUST-1001`;
-- completion date: `2026-07-03T16:45:00Z`.
-
-`PO-1001` is a stable workshop external ID. It is not the API-generated Product Order resource ID.
-
-### 7.3 Find the in-progress order
+### 7.3 Find the order in state inProgress
 
 Run:
 
-> Invoke product-order-status-query to list only product orders currently in progress. Return their external ID, offering, state and expected completion date.
+> Invoke product-order-status-query to list only product orders currently in state inProgress. Return their external ID, offering, state and expected completion date.
 
-Expected result: only `PO-1002`, for **Business Firewall Solution**, in state `inProgress`, with expected completion date `2026-08-15T18:00:00Z`.
+Expected result: only `PO-1002` is returned, with expected completion date `2026-08-15T18:00:00Z`.
 
 ### 7.4 Explain the held order
 
 Run:
 
-> Invoke product-order-status-query to explain why product order PO-1003 is held
+> Invoke product-order-status-query to explain why product order PO-1003 is held.
 
-Expected result: the Business MPLS order is held pending confirmation of site access.
+Expected result: the response explains that `PO-1003` is held pending site access.
 
 ### 7.5 Find orders for one customer
 
@@ -163,100 +254,54 @@ Run:
 
 > Invoke product-order-status-query to list every product order for customer CUST-1001. Return only the external ID, offering and state.
 
-Expected result:
+Expected result: only `PO-1001` and `PO-1002` are returned.
 
-- `PO-1001`, Fiber Offering 50 Mbps, completed;
-- `PO-1002`, Business Firewall Solution, `inProgress`;
-- `PO-1003` is excluded because it belongs to `CUST-1002`.
+## 8. Run the unsupported-domain control
 
-The Product Order agent retrieves the applicable order records with one MCP call and grounds the final answer in that result.
-
-## 8. Validate an unknown order
-
-Run:
-
-> Invoke product-order-status-query to retrieve product order PO-9999
-
-Expected result: the response states that the result set is empty or that no matching Product Order was found. It must not fabricate an order or confuse `PO-9999` with an API-generated resource ID.
-
-## 9. Test the mutation guardrail
-
-Run:
-
-> Cancel product order PO-1001
-
-Then run:
-
-> Invoke product-order-status-query to cancel product order PO-1001
-
-Expected result for both requests:
-
-- the request is rejected as unsupported;
-- no cancellation request is created;
-- no Product Order state changes;
-- the status-query skill does not select a mutating MCP tool.
-
-This UC-06 A2A skill is intentionally read-only even though the underlying Product Ordering Component exposes other operations.
-
-## 10. Run unsupported-domain controls
-
-Run:
+With `productordera2a` selected, run:
 
 > What network resources are in alarm at the Accelerate Asia Primary Site?
 
-Run:
+Expected result: the request is rejected as unsupported because Resource Inventory is outside this Component's declared Product Ordering domain.
 
-> Who is the prime minister of India?
-
-Expected result: both requests are rejected as unsupported. The Component must not answer from another domain or from general model knowledge.
-
-## 11. Architectural observations
+## 9. Record your observations
 
 Record and discuss:
 
-1. Why does the participant Component declare only `productordera2a`?
-2. Where is the internal `productorderingmcp` dependency owned and invoked?
-3. How does the outer response status identify the selected A2A dependency and skill?
-4. Why is `PO-1001` passed as an external ID rather than an API-generated ID?
-5. Why must a status-focused skill reject cancellation requests?
-6. How does the one-internal-tool-call limit keep delegation bounded?
+1. Which Component owns `productordera2a`?
+2. Which exposed API Name and API type did your Component declare?
+3. Which A2A skill answered the Product Order queries?
+4. How did the seeded data distinguish completed, in-progress, and held orders?
+5. Why was the Resource Inventory control query rejected?
 
-## 12. Exercise completion checklist
+## 10. Exercise completion checklist
 
+- [ ] The AI-Native ODA Canvas Dashboard URL was obtained from the facilitator or pinned Teams message.
+- [ ] `TMFC002 — Product Order Capture and Validation` was used to find `productordera2a`.
+- [ ] The dependent Component reports **Complete** in the AI-Native ODA Canvas Dashboard.
+- [ ] The template `component.yaml` was downloaded from this repository.
+- [ ] All required team-owned fields were updated.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] Only `productordera2a` is declared, with `apiType: a2a`.
+- [ ] The completed `component.yaml` was submitted to the facilitator.
+- [ ] The deployed Orchestrator Agent URL was obtained from the facilitator or the `orch-agent-ui` row.
 - [ ] All five readiness indicators are green.
-- [ ] `TMFC002 — Product Order Capture and Validation` is identified as the dependency Component.
-- [ ] The deployed Component is **Complete** in the Canvas Dashboard.
-- [ ] The A2A name and type were taken from **Exposed core APIs**.
-- [ ] Only `productordera2a` is declared by the participant Component.
-- [ ] The Product Order Agent Card and skill are discovered.
+- [ ] One Product Order A2A skill is discovered.
 - [ ] All three seeded Product Orders are returned.
-- [ ] `PO-1001` is reported as completed.
-- [ ] `PO-1002` is reported as `inProgress`.
-- [ ] `PO-1003` is reported as held with the correct reason.
-- [ ] The unknown order produces no fabricated result.
-- [ ] Both cancellation requests are rejected.
-- [ ] Cross-domain and general-knowledge requests are rejected.
-- [ ] The team can explain the outer A2A and internal MCP relationship.
+- [ ] `PO-1001` is completed, `PO-1002` is `inProgress`, and `PO-1003` is held.
+- [ ] The CUST-1001 query returns `PO-1001` and `PO-1002` only.
+- [ ] The Resource Inventory control query is rejected as unsupported.
 
-## 13. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Action |
 |---|---|
-| The Product Ordering Component or A2A API is missing in the Dashboard | Confirm the namespace filter, then ask the facilitator to verify the deployed dependency Component. |
-| The dependency is unresolved | Confirm the exact name `productordera2a` and `apiType: a2a` in `component.yaml`. |
-| The Agent Card or skill cannot be discovered | Select **Refresh Dependent Services** once, then give the visible error to the facilitator. |
-| An A2A invocation returns HTTP 404 | Ask the facilitator to verify that the current Product Order A2A image and base invocation route are deployed. |
-| The complete list contains no orders | Ask the facilitator to verify the UC-06 Product Ordering seed baseline for release `po-1`. |
-| A stable order ID returns no result | Include the complete ID, such as `PO-1001`, in a self-contained request. |
-| A follow-up such as `Why is it held?` is unsupported | Repeat the complete request and include `PO-1003`. |
-| A cancellation request is rejected | This is expected; the workshop skill is status-only. |
-| A response is too long | Request one order by external ID or ask for only the required fields. |
-
-## 14. Current MVP constraints
-
-- The outer Orchestrator Agent invokes one A2A capability for each query.
-- The Product Order agent may make at most one internal MCP call.
-- The Product Order A2A skill is status-focused and does not invoke mutation tools.
-- Outer-agent tool or skill chaining is not supported.
-- Previous chat messages are not supplied as conversational context.
-- The workshop uses synthetic data only.
+| The AI-Native ODA Canvas Dashboard cannot be opened | Use the AI-Native ODA Canvas Dashboard URL shown by the facilitator or pinned in the workshop Teams channel. If it still fails, notify the facilitator. |
+| The browser reports that the certificate is not trusted | Confirm that the complete hostname matches the facilitator-provided AI-Native ODA Canvas Dashboard or Orchestrator Agent URL. Use **Advanced** and proceed only for that verified workshop URL. |
+| `TMFC002` or `productordera2a` is missing | Confirm the namespace filter, then ask the facilitator to verify the Product Order Capture and Validation Component. |
+| The dependency is unresolved | Confirm the exact dependency name and `apiType` in `component.yaml`, then ask the facilitator to verify the dependent Component. |
+| The team's Orchestrator Agent URL is unknown | Ask the facilitator for the team-specific URL or locate `orch-agent-ui` under the team's Component in the AI-Native ODA Canvas Dashboard. |
+| The Product Order A2A skill is unavailable | Select **Refresh Dependent Services** once; if the problem remains, provide the visible error to the facilitator. |
+| An order is not found | Confirm that the complete external ID, including the `PO-` prefix, is included in the same query. |
+| A follow-up such as “Why is it held?” is unsupported | Repeat the complete request and include the Product Order external ID explicitly. |
+| An unexpected dependency appears | Confirm that the Component declares only `productordera2a`; do not add `productorderingmcp` or `TMF622`. |

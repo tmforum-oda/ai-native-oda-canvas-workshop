@@ -12,7 +12,8 @@ spec:
     name: replace-with-team-component-name
     version: "0.1.0"
     description: Replace with a concise description of the assigned use case.
-    functionalBlock: CoreCommerce
+    # TEAM EDITABLE: use the exact functional block specified by the assigned use-case guide.
+    functionalBlock: replace-with-functional-block
     publicationDate: "2026-08-01T00:00:00Z"
     status: specified
     maintainers:
@@ -26,7 +27,7 @@ spec:
     # FACILITATOR MANAGED: do not change the UI interface contract.
     exposedAPIs:
       - name: orch-agent-ui
-        # UI-only MVP: openapi is a temporary Canvas routing workaround.
+        # FACILITATOR MANAGED: do not change the exposed UI API type.
         apiType: openapi
         specification:
           - url: https://example.invalid/thin-agent-ui.yaml
@@ -47,6 +48,7 @@ spec:
       - name: replace-with-exposed-api-name
         specification:
           - apiType: mcp
+    # END OF TEAM EDITABLE SECTION
 
   eventNotification:
     publishedEvents: []
@@ -68,7 +70,7 @@ spec:
           CORS: {}
           template: ""
 
-  # FACILITATOR MANAGED: the workshop MVP uses the existing Canvas role configuration.
+  # FACILITATOR MANAGED: do not change the Canvas role configuration.
   securityFunction:
     canvasSystemRole: Admin
     exposedAPIs: []

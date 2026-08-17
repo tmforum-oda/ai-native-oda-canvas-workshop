@@ -1,17 +1,17 @@
 # UC-01 — Broadband Offer Explorer
 
-## Participant User Guide
+## Participant user guide
 
 ## 1. Objective
 
-In this exercise, your team will use the AI-Native Canvas Orchestrator Agent to discover and explain seeded Product Catalog offerings and prices.
+In this exercise, your team will design and validate an AI-Native ODA Component that discovers and explains seeded Product Catalog offerings and prices.
 
-You will compare two ways of accessing the same domain:
+The Component will depend on:
 
-- `productcatalogmcp` — direct invocation of Product Catalog MCP tools;
-- `productcataloga2a` — invocation of the Product Catalog A2A agent skill.
+- `productcatalogmcp` for direct access to Product Catalog MCP tools;
+- `productcataloga2a` for access to the Product Catalog A2A agent skill.
 
-By completing the exercise, your team should be able to explain the difference between direct MCP tool use and delegation to an A2A agent.
+You will use both interfaces to retrieve Product Catalog information and compare the results.
 
 ## 2. Use-case boundary
 
@@ -24,68 +24,173 @@ The Component supports Product Catalog questions about:
 
 It does not provide Product Inventory, Service Inventory, Resource Inventory, Service Qualification, or Product Ordering capabilities.
 
-Each query sent to the outer Orchestrator Agent invokes at most one selected dependency. The Orchestrator Agent does not chain multiple tools or skills.
+All workshop records are synthetic and prepared specifically for this exercise.
 
-## 3. Discover the dependencies in the Canvas Dashboard
+The Orchestrator Agent provides single-turn conversations. Include the relevant Product Catalog entity, complete identifier, requested fields, and other necessary context in every query. Do not rely on an earlier response or a follow-up such as “Describe it”.
 
-Before editing `component.yaml`, use the AI-Native Canvas Dashboard to identify the scaffolded ODA Component that owns the required APIs.
+## 3. Identify the dependent functions in the AI-Native ODA Canvas Dashboard
 
-The primary dependency entity for this exercise is:
+### 3.1 Open the AI-Native ODA Canvas Dashboard
 
-| Component ID | Scaffolded Component | Deployed Component resource |
-|---|---|---|
-| `TMFC001` | Product Catalog Management | `pc-2-productcatalogmanagement` |
-| `productagent` | Product Catalog Agent | `pa-1-productagent` |
+Obtain the **AI-Native ODA Canvas Dashboard URL** from the facilitator's presentation or the link pinned in the workshop Teams channel.
 
-`TMFC001` identifies the scaffolded Product Catalog Management Component. `TMF620` identifies its Product Catalog Management OpenAPI contract; 
-`productagent` is an agent scaffolded into a Component definition that depends on MCP interface exposed by `TMFC001`.
+> **Workshop certificate notice:** The AI-Native ODA Canvas Dashboard and deployed Orchestrator Agent use workshop-managed self-signed certificates. Your browser may display **Your connection is not private**, **Certificate not trusted**, or a similar warning. Confirm that the complete URL exactly matches the facilitator-provided or pinned workshop URL. Then select the browser's **Advanced** option and choose **Proceed**, **Continue**, or **Accept the risk**. Do not proceed if the hostname differs or the link did not come from the facilitator; ask the facilitator to verify it.
 
-1. Open the AI-Native Canvas Dashboard URL supplied by the facilitator.
-2. Open the **Infrastructure** area.
+1. Open the AI-Native ODA Canvas Dashboard.
+2. Open the **Infrastructure** tab.
 3. Select **Components**.
 4. If a namespace filter is displayed, select **components** or **All namespaces**.
-5. Find **TMFC001 — Product Catalog Management** in the Components view. The deployed Component resource is `pc-2-productcatalogmanagement`.
-6. Open that Component and confirm that its metadata identifies `TMFC001`.
-7. Confirm that the Component **Status** is **Complete**.
-8. Locate the **Exposed core APIs** section owned by this Component.
-9. FInd **productagent - Product Catalog Agent** in the Components view. The deployed Component resource is `pa-1-productagent`.
-10. Find the rows with these API types:
-   - **mcp**;
-   - **a2a**.
-11. Record the exact **Name** and **API Type** shown for each row.
 
-For this use case, you should identify:
+This use case requires APIs from two deployed Components:
 
-| Exposed API name | API type | Purpose |
+| Required interface | Dependent function | Component ID | Deployed Component resource |
+|---|---|---|---|
+| MCP | Product Catalog Management | `TMFC001` | `pc-2-productcatalogmanagement` |
+| A2A | Product Catalog Agent | `productagent` | `pa-1-productagent` |
+
+### 3.2 Find the MCP dependency under TMFC001
+
+1. In the Components view, find **TMFC001 — Product Catalog Management**. Its deployed Component resource is `pc-2-productcatalogmanagement`.
+2. Open the Component.
+3. Confirm that its Component metadata shows ID `TMFC001`.
+4. Confirm that its **Status** is **Complete**.
+5. Find **Exposed core APIs**.
+6. Find the row whose **API Type** is **mcp** and whose **Name** is `productcatalogmcp`.
+7. Record:
+   - exposed API **Name**: `productcatalogmcp`;
+   - **API Type**: `mcp`.
+
+Do not select the `TMF620` OpenAPI row. `TMF620` identifies the Product Catalog API contract; the dependency required by this exercise is the MCP API named `productcatalogmcp`.
+
+If `productcatalogmcp` is missing or the Component is not **Complete**, stop and notify the facilitator.
+
+### 3.3 Find the A2A dependency under productagent
+
+1. Return to the **Components** view.
+2. Find **productagent — Product Catalog Agent**. Its deployed Component resource is `pa-1-productagent`.
+3. Open the Component.
+4. Confirm that its Component metadata shows ID `productagent`.
+5. Confirm that its **Status** is **Complete**.
+6. Find **Exposed core APIs**.
+7. Find the row whose **API Type** is **a2a** and whose **Name** is `productcataloga2a`.
+8. Record:
+   - exposed API **Name**: `productcataloga2a`;
+   - **API Type**: `a2a`.
+
+If `productcataloga2a` is missing or the Product Catalog Agent Component is not **Complete**, stop and notify the facilitator.
+
+### 3.4 Confirm the dependency values
+
+You should now have:
+
+| Dependent function Component ID | Exposed API Name | API type |
 |---|---|---|
-| `productcatalogmcp` | `mcp` | Direct Product Catalog MCP tools |
-| `productcataloga2a` | `a2a` | Product Catalog A2A agent skill |
+| `TMFC001` | `productcatalogmcp` | `mcp` |
+| `productagent` | `productcataloga2a` | `a2a` |
 
-Use the value shown in the **Name** column—not the ID, implementation, URL, Component name, or display label—as the dependent API name in your Component definition. Do not copy the exposed URL into `component.yaml`; the Canvas resolves it after deployment.
+Use the exposed API **Name** exactly as displayed in the AI-Native ODA Canvas Dashboard. Do not use the Component ID, API contract ID, implementation name, display label, or URL as the dependency name.
 
-Do not select the `TMF620` OpenAPI row for this workshop exercise. Select the MCP and A2A APIs exposed by the `TMFC001` Component.
+Do not copy either exposed API URL into `component.yaml`. The AI-Native ODA Canvas resolves the deployed dependency endpoints.
 
-If either API is missing or the Product Catalog Component is not **Complete**, stop and notify the facilitator.
+## 4. Download and update component.yaml
 
-## 4. Build the dependency declaration
+### 4.1 Download the template
 
-Declare these dependencies in the supplied Component template:
+1. Open the participant template: [`templates/component.yaml`](../templates/component.yaml).
+2. Use the GitHub **Download raw file** action to download it.
+3. Keep the filename `component.yaml`.
+4. Open the downloaded file in a text or code editor.
+
+Do not create a new Component definition from an empty file. Start with the supplied template so that the facilitator-managed sections remain intact.
+
+### 4.2 Update the team-owned fields
+
+Change each of the following fields:
+
+| YAML field | Required change |
+|---|---|
+| `metadata.name` | Replace `replace-with-team-component-name` with the unique Component resource name assigned or approved by the facilitator. |
+| `metadata.labels["oda.tmforum.org/componentName"]` | Use exactly the same Component resource name as `metadata.name`. |
+| `spec.componentMetadata.id` | Replace `replace-with-team-component-id` with the unique team Component ID assigned or approved by the facilitator. |
+| `spec.componentMetadata.name` | Use the same team Component name used in `metadata.name`. |
+| `spec.componentMetadata.description` | Describe the Broadband Offer Explorer and state that it uses Product Catalog MCP and A2A dependencies. |
+| `spec.componentMetadata.functionalBlock` | Replace `replace-with-functional-block` with `CoreCommerce`. |
+| `spec.componentMetadata.maintainers[0].name` | Replace `Workshop Team` with the team or maintainer name agreed during the exercise. |
+| `spec.componentMetadata.owners[0].name` | Replace `Workshop Team` with the team or owner name agreed during the exercise. |
+| `spec.coreFunction.dependentAPIs` | Replace the example dependency with the two dependency entries shown in section 4.3. |
+
+Leave these supplied Component metadata values unchanged unless the facilitator instructs otherwise:
+
+- `spec.componentMetadata.version`;
+- `spec.componentMetadata.publicationDate`;
+- `spec.componentMetadata.status`.
+
+### 4.3 Replace dependentAPIs
+
+Under `spec.coreFunction`, replace the complete example `dependentAPIs` block with:
 
 ```yaml
-dependentAPIs:
-  - name: productcatalogmcp
-    specification:
-      - apiType: mcp
-  - name: productcataloga2a
-    specification:
-      - apiType: a2a
+    dependentAPIs:
+      - name: productcatalogmcp
+        specification:
+          - apiType: mcp
+      - name: productcataloga2a
+        specification:
+          - apiType: a2a
 ```
 
-Dependency names are exact and case-sensitive. Do not add endpoint URLs; the Canvas resolves them from the deployed dependency Components.
+Apply these rules:
 
-## 5. Readiness checks
+1. Enter both dependencies exactly as shown.
+2. Keep the dependency names lowercase and unchanged; matching is case-sensitive.
+3. Use `mcp` for `productcatalogmcp`.
+4. Use `a2a` for `productcataloga2a`.
+5. Use one `dependentAPIs` entry for each exposed API.
+6. Do not add a URL to either dependency.
+7. Do not declare the `TMF620` OpenAPI interface.
 
-Open the team-specific Orchestrator Agent URL supplied by the facilitator. Before running the exercise, confirm that the sidebar shows green indicators for:
+### 4.4 Do not change facilitator-managed fields
+
+Do not change:
+
+- `spec.coreFunction.exposedAPIs`;
+- the Orchestrator Agent implementation, path, or port placeholders;
+- `spec.eventNotification`;
+- `spec.managementFunction`;
+- `spec.securityFunction`;
+- any gateway, observability, credential, service, health, or runtime setting.
+
+The facilitator will complete the deployment-specific placeholders after reviewing your submission.
+
+### 4.5 Review and submit
+
+Before submitting the file, confirm:
+
+- [ ] The team Component ID and name are correct and consistent.
+- [ ] The description identifies the Broadband Offer Explorer use case.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] Owner and maintainer names have been updated.
+- [ ] `productcatalogmcp` is declared with `apiType: mcp`.
+- [ ] `productcataloga2a` is declared with `apiType: a2a`.
+- [ ] No dependency URL or credential has been added.
+- [ ] Facilitator-managed sections remain unchanged.
+- [ ] The YAML indentation and structure are valid.
+
+Submit the completed `component.yaml` through the channel specified by the facilitator. Do not deploy it directly unless the facilitator asks you to do so.
+
+## 5. Open the deployed Orchestrator Agent
+
+The facilitator will review and deploy your `component.yaml`.
+
+After deployment:
+
+1. Wait for the facilitator to confirm that your team's Component is ready.
+2. Obtain your team's **Orchestrator Agent URL** from the facilitator in the workshop Teams channel.
+3. Alternatively, open your team's Component in the **AI-Native ODA Canvas Dashboard**, find **Exposed core APIs**, locate the row named `orch-agent-ui`, and open its **URL**.
+4. If the browser displays a certificate warning, verify the URL and follow the workshop certificate notice in section 3.1.
+5. Do not use the MCP or A2A dependency URL as the Orchestrator Agent URL.
+
+Before running the exercise, confirm that the Orchestrator Agent sidebar shows green indicators for:
 
 - **Component complete**;
 - **Component CR readable**;
@@ -95,7 +200,7 @@ Open the team-specific Orchestrator Agent URL supplied by the facilitator. Befor
 
 Confirm that both `productcatalogmcp` and `productcataloga2a` appear in the dependency selector.
 
-If a dependency was recently deployed or corrected, select **Refresh Dependent Services** before continuing.
+If the facilitator has corrected or redeployed a dependency, select **Refresh Dependent Services** once before continuing.
 
 ## 6. Discover the available capabilities
 
@@ -106,14 +211,15 @@ Keep the dependency selection set to **Auto** and run:
 Expected result:
 
 - the response groups capabilities by dependency;
-- `productcatalogmcp` exposes Product Catalog MCP tools;
-- `productcataloga2a` exposes the Product Catalog A2A skill.
+- `productcatalogmcp` exposes 20 Product Catalog MCP tools;
+- `productcataloga2a` exposes one Product Catalog A2A skill;
+- the Component reports 21 capabilities across two dependencies.
 
 Run:
 
 > What MCP tools are available?
 
-Expected result: the response lists the discovered Product Catalog MCP tools, including the offering and price retrieval tools.
+Expected result: the response lists the Product Catalog MCP tools, including `product_offering_get` and `product_offering_price_get`.
 
 Run:
 
@@ -121,11 +227,17 @@ Run:
 
 Expected result: the response lists the Product Catalog query skill exposed by `productcataloga2a`.
 
+Run:
+
+> Retrieve the agent card for productcataloga2a
+
+Expected result: the Agent Card identifies **Product Agent** and its Product Catalog query skill.
+
 ## 7. Test direct MCP access
 
-Select `productcatalogmcp` explicitly in the dependency selector.
+Select `productcatalogmcp` in the dependency selector.
 
-### 7.1 List the product offerings
+### 7.1 List the product offerings and retain the Fiber ID
 
 Run:
 
@@ -135,19 +247,35 @@ Expected result:
 
 - the response includes **Fiber Broadband 50 Mbps**;
 - the status line identifies `productcatalogmcp`, API type `mcp`, and capability `product_offering_get`;
-- the response includes the generated API ID of the fiber offering.
+- the response includes a generated API ID for each offering.
 
-Copy the API ID returned for **Fiber Broadband 50 Mbps**. The ID may change when the workshop seed data is reloaded.
+In the response:
 
-### 7.2 Inspect the fiber offering
+1. Find the entry named **Fiber Broadband 50 Mbps**.
+2. Copy the value displayed beside its **ID**.
+3. Keep this ID for the suggested question in section 7.2.
 
-Replace `<FIBER-OFFERING-ID>` with the ID copied from the previous response, then run:
+The ID is generated by the Product Catalog API and may change whenever the workshop seed data is reloaded.
+
+### 7.2 Retrieve the Fiber offering by ID
+
+Use this suggested question:
 
 > Invoke product_offering_get with product_offering_id `<FIBER-OFFERING-ID>` and describe the offering.
 
-Expected result: the response describes the 50 Mbps fiber offering and identifies the direct MCP capability in the status line.
+Before submitting it:
 
-Do not ask a follow-up such as `Describe it`. The MVP displays previous messages but does not supply them as model context. Every query must be self-contained.
+1. Take the ID copied from the **Fiber Broadband 50 Mbps** entry in the response to section 7.1.
+2. In the suggested question above, replace the complete placeholder `<FIBER-OFFERING-ID>`, including the angle brackets, with that copied ID.
+3. Submit the complete updated question.
+
+For example, if section 7.1 returned ID `12345678-1234-1234-1234-123456789abc`, submit:
+
+> Invoke product_offering_get with product_offering_id `12345678-1234-1234-1234-123456789abc` and describe the offering.
+
+Expected result: the response describes only **Fiber Broadband 50 Mbps** and the status line identifies `productcatalogmcp`, API type `mcp`, and capability `product_offering_get`.
+
+Do not submit the placeholder unchanged. Do not use a follow-up such as “Describe it”; each query must contain the Product Catalog entity and its complete ID.
 
 ### 7.3 List product-offering prices
 
@@ -155,11 +283,15 @@ Run:
 
 > Invoke product_offering_price_get to list every product offering price, including its name, amount, currency, recurring charge period and lifecycle status.
 
-Expected result: the response includes **Fiber Broadband 50 Mbps - Monthly Fee** and identifies `product_offering_price_get` in the status line.
+Expected result:
+
+- the response includes **Fiber Broadband 50 Mbps - Monthly Fee**;
+- the response includes its amount, currency, recurring charge period, and lifecycle status;
+- the status line identifies `productcatalogmcp`, API type `mcp`, and capability `product_offering_price_get`.
 
 ## 8. Compare A2A access
 
-Select `productcataloga2a` explicitly in the dependency selector.
+Select `productcataloga2a` in the dependency selector.
 
 ### 8.1 List the product offerings through A2A
 
@@ -178,7 +310,10 @@ Run:
 
 > List every product offering price, including its name, amount, currency, recurring charge period and lifecycle status.
 
-Expected result: the A2A agent returns the available prices, including the fiber monthly fee.
+Expected result:
+
+- the response includes the same seeded Product Catalog prices returned through MCP;
+- the status line identifies `productcataloga2a` and API type `a2a`.
 
 ## 9. Run the unsupported-domain control
 
@@ -186,63 +321,61 @@ With either Product Catalog dependency selected, run:
 
 > What service instances are active for customer CUST-1001?
 
-Expected result: the Orchestrator Agent rejects the request as unsupported because the Component has no Service Inventory capability.
+Expected result: the request is rejected as unsupported because Service Inventory is outside this Component's declared Product Catalog domain.
 
-The query must not be answered using general model knowledge or routed to an unrelated Product Catalog operation.
+## 10. Compare the two interfaces
 
-## 10. Compare the two approaches
-
-Record your observations using the following table:
+Record your observations:
 
 | Observation | Direct MCP | Product Catalog A2A |
 |---|---|---|
-| Selected dependency | `productcatalogmcp` | `productcataloga2a` |
-| Interface type | MCP | A2A |
-| Outer capability | Specific MCP tool | Product Catalog agent skill |
-| Tool selection | Performed by the outer Orchestrator Agent | Performed inside the Product Catalog agent |
-| Outer dependency calls per query | One | One |
-| Response grounded in dependency data | Yes | Yes |
+| Dependency | `productcatalogmcp` | `productcataloga2a` |
+| API type | MCP | A2A |
+| Interface used | Product Catalog MCP tool | Product Catalog agent skill |
+| Seeded offerings returned | Record your result | Record your result |
+| Seeded prices returned | Record your result | Record your result |
 
 Discuss:
 
-1. When is direct selection of an MCP tool preferable?
-2. When is delegation to a domain A2A agent preferable?
-3. What information is visible in the response status line?
-4. Did both approaches return consistent seeded data?
+1. Did both interfaces return the same seeded offerings and prices?
+2. Which Component owns each exposed API?
+3. Which exposed API Name and API type did your Component declare for each interface?
+4. What information in the response confirms which interface was used?
 
 ## 11. Exercise completion checklist
 
+- [ ] The AI-Native ODA Canvas Dashboard URL was obtained from the facilitator or pinned Teams message.
+- [ ] `TMFC001 — Product Catalog Management` was used to find `productcatalogmcp`.
+- [ ] `productagent — Product Catalog Agent` was used to find `productcataloga2a`.
+- [ ] Both dependency Components report **Complete** in the AI-Native ODA Canvas Dashboard.
+- [ ] The template `component.yaml` was downloaded from this repository.
+- [ ] All required team-owned fields were updated.
+- [ ] `spec.componentMetadata.functionalBlock` is set to `CoreCommerce`.
+- [ ] Both dependent API declarations are correct.
+- [ ] The completed `component.yaml` was submitted to the facilitator.
+- [ ] The deployed Orchestrator Agent URL was obtained from the facilitator or the `orch-agent-ui` row.
 - [ ] All five readiness indicators are green.
-- [ ] `TMFC001 — Product Catalog Management` is identified as the dependency Component.
-- [ ] `productagent - Product Catalog Agent` is identified as the dependency Component.
-- [ ] The deployed Product Catalog Component is **Complete** in the Canvas Dashboard.
-- [ ] The exposed API names and types were taken from **Exposed core APIs**.
-- [ ] Both dependencies are resolved and available for selection.
-- [ ] MCP tools and the A2A skill are discovered.
-- [ ] The complete offering list includes **Fiber Broadband 50 Mbps**.
-- [ ] The fiber offering is retrieved using its generated API ID.
-- [ ] The price list includes the fiber monthly fee.
+- [ ] MCP tools, the A2A skill, and the Product Catalog Agent Card are discovered.
+- [ ] The offering list includes **Fiber Broadband 50 Mbps**.
+- [ ] The Fiber offering is retrieved using the generated API ID copied from the list response.
+- [ ] The price list includes the Fiber monthly fee and its requested price fields.
 - [ ] The MCP response identifies `productcatalogmcp`.
 - [ ] The A2A response identifies `productcataloga2a`.
 - [ ] The Service Inventory control query is rejected as unsupported.
-- [ ] The team can explain the MCP and A2A execution differences.
+- [ ] The team can explain the two dependency declarations.
 
 ## 12. Troubleshooting
 
 | Symptom | Action |
 |---|---|
-| The Product Catalog Component or an expected API is missing in the Dashboard | Confirm the namespace filter, then ask the facilitator to verify the deployed dependency Component. |
-| A dependency is missing or unresolved | Confirm the dependency name and `apiType` in `component.yaml`, then ask the facilitator to verify Component completion. |
+| The AI-Native ODA Canvas Dashboard cannot be opened | Use the AI-Native ODA Canvas Dashboard URL shown by the facilitator or pinned in the workshop Teams channel. If it still fails, notify the facilitator. |
+| The browser reports that the certificate is not trusted | Confirm that the complete hostname matches the facilitator-provided AI-Native ODA Canvas Dashboard or Orchestrator Agent URL. Use **Advanced** and proceed only for that verified workshop URL. |
+| `TMFC001` or `productcatalogmcp` is missing | Confirm the namespace filter, then ask the facilitator to verify the Product Catalog Management Component. |
+| `productagent` or `productcataloga2a` is missing | Return to the Components view and locate the Product Catalog Agent separately. If it is still missing, notify the facilitator. |
+| A dependency is unresolved | Confirm the exact dependency name and `apiType` in `component.yaml`, then ask the facilitator to verify the dependent Component. |
+| The team's Orchestrator Agent URL is unknown | Ask the facilitator for the team-specific URL or locate `orch-agent-ui` under the team's Component in the AI-Native ODA Canvas Dashboard. |
 | MCP tools or the A2A skill are unavailable | Select **Refresh Dependent Services** once; if the problem remains, provide the visible error to the facilitator. |
-| A broadband keyword query returns no result | Use the complete-list query in this guide, then retrieve the required offering with its generated API ID. |
-| A follow-up such as `Describe it` is unsupported | Repeat the complete request and include the offering ID explicitly. |
-| Auto selects an unexpected dependency | Select `productcatalogmcp` or `productcataloga2a` explicitly and repeat the query. |
-| A response is too long | Request only the specific fields shown in this guide or retrieve one resource by ID. |
-
-## 13. Current MVP constraints
-
-- The outer Orchestrator Agent invokes only one dependency capability for each query.
-- Outer-agent tool or skill chaining is not supported.
-- Previous chat messages are not supplied as conversational context.
-- Keyword filtering follows the behavior of the dependent Product Catalog implementation and may not perform partial-text matching.
-- The workshop uses synthetic data only.
+| The Fiber ID placeholder is still in the question | Return to section 7.1, copy the ID beside **Fiber Broadband 50 Mbps**, and replace the entire placeholder before submitting. |
+| A broadband keyword query returns no result | Use the complete-list query in section 7.1, then retrieve the Fiber offering using its generated API ID. |
+| A follow-up such as “Describe it” is unsupported | Repeat the complete request and include the offering ID explicitly. |
+| A response is too long | Request only the fields shown in this guide or retrieve one offering by ID. |
