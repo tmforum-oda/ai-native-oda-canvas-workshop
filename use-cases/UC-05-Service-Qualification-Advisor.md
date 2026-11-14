@@ -35,7 +35,7 @@ The Orchestrator Agent provides single-turn conversations. Include the qualifica
 
 Obtain the **Canvas Portal URL** from the facilitator's presentation or the link pinned in the workshop Teams channel.
 
-> **Workshop URL notice:** The Canvas Portal uses plain `http://`. Type the complete `http://` URL from the facilitator or the workshop Teams channel; if your browser changes it to `https://`, the page does not load. The browser may mark the portal **Not secure**, or warn that the site does not support a secure connection and offer **Continue to site**; both are expected for the verified portal URL. Your Orchestrator Agent uses `https://` with a workshop-managed self-signed certificate, so the browser may display **Your connection is not private**, **Certificate not trusted**, or a similar warning. Confirm that the hostname matches the `orch-agent-ui` URL shown for your own Component in the Canvas Portal, then select **Advanced** and choose **Proceed**, **Continue**, or **Accept the risk**. Do not proceed if the hostname differs; ask the facilitator to verify it.
+> **Workshop URL notice:** The Canvas Portal uses plain `http://`. Type the complete `http://` URL from the facilitator or the workshop Teams channel; if your browser changes it to `https://`, the page does not load. The browser may mark the portal **Not secure**, or warn that the site does not support a secure connection and offer **Continue to site**; both are expected for the verified portal URL. Your Orchestrator Agent uses `https://` with a workshop-managed self-signed certificate, so the browser may display **Your connection is not private**, **Certificate not trusted**, or a similar warning. Confirm that the hostname matches the URL opened from your own `orch-agent-ui` row under **APIS → Exposed APIs** in the Canvas Portal, then select **Advanced** and choose **Proceed**, **Continue**, or **Accept the risk**. Do not proceed if the hostname differs; ask the facilitator to verify it.
 
 1. Open the Canvas Portal and sign in with your team's credentials from the facilitator. On first sign-in you are asked to set a new password.
 2. In the left navigation, under **COMPONENTS**, select **Inventory**.
@@ -55,11 +55,11 @@ This use case requires two APIs from the same deployed Component:
 3. Open the **Raw** tab and confirm that `spec.componentMetadata.id` is `TMFC009`.
 4. On the **Overview** tab, confirm that **Status** shows **Complete**.
 5. Open the **APIs** tab and find the **Core Function** group.
-6. Find the API named `servicequalificationmcp`. To confirm its type, open **APIs → Exposed APIs** in a second browser tab, set the API type filter to **MCP**, and check that `servicequalificationmcp` is listed.
+6. Find the API named `servicequalificationmcp`. The **APIs** tab shows only the API name. To confirm its type, stay in the same browser tab: in the left navigation, under **APIS**, select **Exposed APIs**, set the **All API Types** filter to **MCP**, and type `servicequalificationmcp` in the search box. Check that the row `sq-1-servicequalificationmanagement-servicequalificationmcp` is listed, then return to **COMPONENTS → Inventory**.
 7. Record:
    - exposed API **Name**: `servicequalificationmcp`;
    - **API Type**: `mcp`.
-8. In the same **Core Function** group, find the API named `servicequalificationa2a`. To confirm its type, open **APIs → Exposed APIs** in a second browser tab, set the API type filter to **A2A**, and check that `servicequalificationa2a` is listed.
+8. In the same **Core Function** group, find the API named `servicequalificationa2a`. The **APIs** tab shows only the API name. To confirm its type, stay in the same browser tab: in the left navigation, under **APIS**, select **Exposed APIs**, set the **All API Types** filter to **A2A**, and type `servicequalificationa2a` in the search box. Check that the row `sq-1-servicequalificationmanagement-servicequalificationa2a` is listed, then return to **COMPONENTS → Inventory**.
 9. Record:
    - exposed API **Name**: `servicequalificationa2a`;
    - **API Type**: `a2a`.
@@ -218,11 +218,13 @@ To correct your values after installation, use **COMPONENTS → Lifecycle → Up
 
 ## 5. Open the deployed Orchestrator Agent
 
-1. Under **COMPONENTS**, select **Inventory** and open your team's Component, for example `team01-qualification-advisor`.
-2. Open the **APIs** tab. Under **Core Function**, find `orch-agent-ui` and open its **URL**.
-3. If no URL is shown yet, wait a minute and refresh the page. If it is still missing, ask the facilitator.
-4. If the browser displays a certificate warning, verify the URL and follow the workshop URL notice in section 3.1.
-5. Do not use an MCP or A2A dependency URL as the Orchestrator Agent URL. Do not use another team's `orch-agent-ui`; every team's Component exposes an API with this name.
+1. In the left navigation, under **APIS**, select **Exposed APIs**.
+2. In the search box, type your team's release name, for example `team01`.
+3. Find the row named `<release name>-<component.name>-orch-agent-ui`, for example `team01-qualification-advisor-orch-agent-ui`, and confirm that its **Status** is **LIVE**.
+4. In the **Actions** column of that row, select the **Test API endpoint** icon. Your Orchestrator Agent opens in a new browser tab.
+5. If the row is missing or not yet **LIVE**, wait a minute and refresh the page. If it is still missing, ask the facilitator.
+6. If the browser displays a certificate warning, verify the URL and follow the workshop URL notice in section 3.1.
+7. Do not open the MCP or A2A dependency rows as the Orchestrator Agent. Do not open another team's `orch-agent-ui` row; every team's Component exposes an API with this name.
 
 Before running the exercise, confirm that the Orchestrator Agent sidebar shows green indicators for:
 
@@ -370,7 +372,7 @@ Discuss:
 - [ ] `component.functionalBlock` is set to `Production`.
 - [ ] `servicequalificationmcp` and `servicequalificationa2a` are declared with the correct API types.
 - [ ] Every declared dependency is **Resolved** under **APIs → Dependent APIs**.
-- [ ] The deployed Orchestrator Agent URL was opened from the `orch-agent-ui` API of the team's Component.
+- [ ] The Orchestrator Agent was opened with **Test API endpoint** on the team's own `orch-agent-ui` row under **APIS → Exposed APIs**.
 - [ ] All five readiness indicators are green.
 - [ ] Eight MCP tools and one A2A skill are discovered.
 - [ ] All three seeded qualification outcomes are returned.
@@ -387,10 +389,10 @@ Discuss:
 | The Component does not reach **Complete** | Open its **Events** tab, then ask the facilitator. Do not reinstall under a different release name. |
 | The Canvas Portal cannot be opened | Use the Canvas Portal URL shown by the facilitator or pinned in the workshop Teams channel. If it still fails, notify the facilitator. |
 | The Canvas Portal page does not load or keeps loading | Type the complete `http://` portal URL. If the browser switches to `https://`, allow the HTTP connection for that verified URL (for example **Continue to site**). |
-| The browser reports that the Orchestrator Agent certificate is not trusted | Confirm that the hostname matches the `orch-agent-ui` URL of your own Component in the Canvas Portal. Use **Advanced** and proceed only for that verified URL. |
+| The browser reports that the Orchestrator Agent certificate is not trusted | Confirm that the hostname matches the URL opened from your own `orch-agent-ui` row under **APIS → Exposed APIs**. Use **Advanced** and proceed only for that verified URL. |
 | `TMFC009` or an expected API is missing | Confirm the namespace filter, then ask the facilitator to verify the Service Qualification Management Component. |
 | A dependency is unresolved | Confirm both exact dependency names and API types in `component.dependentAPIs`, correct them with **Components → Lifecycle → Upgrade**, then ask the facilitator to verify the dependent Component if the problem remains. |
-| The team's Orchestrator Agent URL is unknown | Open the team's Component in **Components → Inventory**, then the **APIs** tab, and use the `orch-agent-ui` URL. If it is missing, ask the facilitator. |
+| The team's Orchestrator Agent URL is unknown | Under **APIS → Exposed APIs**, search for your release name and select **Test API endpoint** on your `orch-agent-ui` row. If the row is missing, ask the facilitator. |
 | MCP tools or the A2A skill are unavailable | Select **Refresh Dependent Services** once; if the problem remains, provide the visible error to the facilitator. |
 | A stable identifier query returns no record | Confirm that the complete `WS-QUAL-100x` value was supplied and that direct MCP requests use `external_id`. |
 | A follow-up such as “Explain that result” is unsupported | Repeat the complete request and include the qualification external ID explicitly. |

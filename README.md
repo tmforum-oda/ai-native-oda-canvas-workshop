@@ -2,7 +2,7 @@
 
 ## Participant guide
 
-Welcome to the Accelerate Asia AI-Native ODA Canvas workshop.
+Welcome to the Innovate Asia AI-Native ODA Canvas workshop.
 
 In this workshop, your team will design an AI-Native ODA Component for an assigned telecom use case. You will use the **Canvas Portal** to identify the ODA Components that provide the capabilities you need, declare their exposed MCP or A2A APIs as dependencies in your Component's values, deploy the Component yourself, and validate it through its Orchestrator Agent.
 
@@ -42,7 +42,7 @@ Your team is responsible for:
 
 **Canvas Portal.** The portal uses plain `http://`. Type the complete `http://` URL provided by the facilitator or pinned in the workshop Teams channel. If your browser changes it to `https://`, the page does not load. The browser may mark the portal **Not secure**, or warn that the site does not support a secure connection and offer **Continue to site**. Both are expected for the verified portal URL.
 
-**Orchestrator Agent.** Your team's agent URL uses `https://` with a workshop-managed self-signed certificate. Your browser may display a warning such as **Your connection is not private** or **Certificate not trusted**. Confirm that the hostname matches the `orch-agent-ui` URL shown for your own Component in the Canvas Portal. Then use the browser's **Advanced** option and choose **Proceed**, **Continue**, or **Accept the risk**, depending on the browser.
+**Orchestrator Agent.** Your team's agent URL uses `https://` with a workshop-managed self-signed certificate. Your browser may display a warning such as **Your connection is not private** or **Certificate not trusted**. Confirm that the hostname matches the URL opened from your own `orch-agent-ui` row under **APIS → Exposed APIs** in the Canvas Portal. Then use the browser's **Advanced** option and choose **Proceed**, **Continue**, or **Accept the risk**, depending on the browser.
 
 Do not proceed if the hostname differs from these URLs or if you reached the page from an unverified link. Ask the facilitator to confirm the URL.
 
@@ -89,8 +89,8 @@ Before installing:
 2. In the left navigation, under **COMPONENTS**, select **Inventory**.
 3. Find the owning Component, for example the Component with ID `TMFC005`. The use-case guide gives its deployed resource name.
 4. Open the Component and confirm on the **Overview** tab that its status is **Complete**.
-5. Open the **APIs** tab and find the required API in the **Core Function** group.
-6. Under **APIs → Exposed APIs**, filter by API type (**MCP** or **A2A**) to confirm the exposed API **Name** and type against the dependency catalogue and your use-case guide.
+5. Open the **APIs** tab and find the required API **Name** in the **Core Function** group. The tab shows only the name, not the API type.
+6. To confirm the type, stay in the same browser tab: in the left navigation, under **APIS**, select **Exposed APIs**, set the **All API Types** filter to **MCP** or **A2A**, and search for the API name. The row is named `<owning Component resource>-<API name>`, for example `pi-1-productinventory-productinventorymcp`. Check the name and type against the dependency catalogue and your use-case guide.
 
 Copy the exposed API **Name** exactly. Dependency names are case-sensitive. Do not copy an API URL into your values; the AI-Native ODA Canvas resolves the deployed endpoint.
 
@@ -172,7 +172,7 @@ To change your values later, use **COMPONENTS → Lifecycle → Upgrade** on **y
 
 1. Under **COMPONENTS → Inventory**, open your Component (`<release name>-<component.name>`, for example `team01-installed-product-assistant`) in the **Outside TMF Catalog** section and confirm that its status is **Complete**.
 2. Under **APIs → Dependent APIs**, confirm that every dependency declared by your team is **Resolved**.
-3. On your Component's **APIs** tab, open the URL of `orch-agent-ui`. This is your Orchestrator Agent.
+3. Under **APIS → Exposed APIs**, search for your release name, find your `<release name>-<component.name>-orch-agent-ui` row, and select the **Test API endpoint** icon in its **Actions** column. Your Orchestrator Agent opens in a new browser tab.
 4. Confirm that the agent's sidebar readiness indicators are green.
 5. Ask what capabilities are provided by the Component.
 6. Run the supported queries in your assigned use-case guide.
